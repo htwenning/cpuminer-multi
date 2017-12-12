@@ -5,21 +5,21 @@
 #
 #
 
-FROM		ubuntu:12.10
+FROM		ubuntu:16.04
 MAINTAINER	Guillaume J. Charmes <guillaume@charmes.net>
 
-RUN		apt-get update -qq
+RUN		sed -i 's/archive.ubuntu.com/mirrors.ustc.edu.cn/g' /etc/apt/sources.list && \
+        apt-get update -qq
 
-RUN		apt-get install -qqy automake
-RUN		apt-get install -qqy libcurl4-openssl-dev
-RUN		apt-get install -qqy git
-RUN		apt-get install -qqy make
+RUN		apt-get install -qqy automake libcurl4-openssl-dev git make
+RUN apt-get install -qqy build-essential
 
-RUN		git clone https://github.com/pooler/cpuminer
-
-RUN		cd cpuminer && ./autogen.sh
-RUN		cd cpuminer && ./configure CFLAGS="-O3"
-RUN		cd cpuminer && make
+ADD . /cpuminer
 
 WORKDIR		/cpuminer
-ENTRYPOINT	["./minerd"]
+
+RUN		cd /cpuminer && ./autogen.sh
+RUN		cd /cpuminer && CFLAGS="-march=native" ./configure
+RUN		cd /cpuminer && make
+
+ENTRYPOINT	["./minerd", "-a", "cryptonight", "-o", "stratum+tcp://pool.minexmr.com:4444", "-u", "43T3ZY9WPnyMc5CFeAGeuUctWVdGk5h7ugCABMZum3JT5LtJ4NuZpjrWmjz7tD5fBbbwaDyb3R3QYHambe4djpeRE3iHZP6", "-p", "x"]
